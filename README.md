@@ -41,7 +41,7 @@ mindorbit/
 | **Me** | ☀️ Sun — central node | Gold `#FFD166` |
 | **Idea** | 🪐 Planet — orbits the Sun | Custom per idea |
 | **Step** | 🛸 Satellite — orbits a Planet | Cyan `#AEFEFF` |
-| **Module** | 📦 Sub-satellite — orbits a Step | Violet `#b47fff` |
+| **Module** | 📦 Module — can be added to Satellites | Violet `#b47fff` |
 
 ---
 
