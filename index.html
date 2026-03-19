@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <title>MindOrbit</title>
-<link rel="manifest" id="pwa-manifest-link" href=""/>
+<link rel="manifest" href="manifest.json"/>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20192%20192%22%3E%0A%20%20%3Crect%20width%3D%22192%22%20height%3D%22192%22%20rx%3D%2238%22%20fill%3D%22%23020818%22/%3E%0A%20%20%3Ccircle%20cx%3D%2296%22%20cy%3D%2296%22%20r%3D%2258%22%20fill%3D%22none%22%20stroke%3D%22%2300E5FF%22%20stroke-width%3D%225%22%20opacity%3D%220.35%22/%3E%0A%20%20%3Ccircle%20cx%3D%2296%22%20cy%3D%2296%22%20r%3D%2228%22%20fill%3D%22%23FFD16622%22%20stroke%3D%22%23FFD166%22%20stroke-width%3D%223%22/%3E%0A%20%20%3Ctext%20x%3D%2296%22%20y%3D%22107%22%20text-anchor%3D%22middle%22%20font-size%3D%2230%22%20font-family%3D%22serif%22%3E%E2%98%80%EF%B8%8F%3C/text%3E%0A%20%20%3Ccircle%20cx%3D%22152%22%20cy%3D%2268%22%20r%3D%2210%22%20fill%3D%22%2306D6A088%22%20stroke%3D%22%2306D6A0%22%20stroke-width%3D%222%22/%3E%0A%20%20%3Ccircle%20cx%3D%2256%22%20cy%3D%22148%22%20r%3D%227%22%20fill%3D%22%23AEFEFFaa%22%20stroke%3D%22%23AEFEFF%22%20stroke-width%3D%221.5%22/%3E%0A%3C/svg%3E"/>
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20192%20192%22%3E%0A%20%20%3Crect%20width%3D%22192%22%20height%3D%22192%22%20rx%3D%2238%22%20fill%3D%22%23020818%22/%3E%0A%20%20%3Ccircle%20cx%3D%2296%22%20cy%3D%2296%22%20r%3D%2258%22%20fill%3D%22none%22%20stroke%3D%22%2300E5FF%22%20stroke-width%3D%225%22%20opacity%3D%220.35%22/%3E%0A%20%20%3Ccircle%20cx%3D%2296%22%20cy%3D%2296%22%20r%3D%2228%22%20fill%3D%22%23FFD16622%22%20stroke%3D%22%23FFD166%22%20stroke-width%3D%223%22/%3E%0A%20%20%3Ctext%20x%3D%2296%22%20y%3D%22107%22%20text-anchor%3D%22middle%22%20font-size%3D%2230%22%20font-family%3D%22serif%22%3E%E2%98%80%EF%B8%8F%3C/text%3E%0A%20%20%3Ccircle%20cx%3D%22152%22%20cy%3D%2268%22%20r%3D%2210%22%20fill%3D%22%2306D6A088%22%20stroke%3D%22%2306D6A0%22%20stroke-width%3D%222%22/%3E%0A%20%20%3Ccircle%20cx%3D%2256%22%20cy%3D%22148%22%20r%3D%227%22%20fill%3D%22%23AEFEFFaa%22%20stroke%3D%22%23AEFEFF%22%20stroke-width%3D%221.5%22/%3E%0A%3C/svg%3E"/>
 <meta name="apple-mobile-web-app-title" content="MindOrbit"/>
@@ -641,40 +641,7 @@ textarea.f-input{min-height:72px;}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script>
 'use strict';
-// ── PWA Manifest via Blob URL ──
-// Blob URL is accepted by Chrome for installability (unlike data: URIs)
-// Full PWA install requires HTTPS + SW fetch handler — works on GitHub Pages
-(function(){
-  try{
-    const iconUri=document.querySelector('link[rel="apple-touch-icon"]').href;
-    const pageUrl=location.href.replace(/[#?].*$/,'');
-    const manifest={
-      id:'mindorbit-cedracine',
-      name:'MindOrbit',
-      short_name:'MindOrbit',
-      description:'Galaxy of Ideas — fractal mind-map PWA',
-      start_url:pageUrl,
-      scope:pageUrl.substring(0,pageUrl.lastIndexOf('/')+1),
-      display:'standalone',
-      display_override:['standalone','minimal-ui'],
-      background_color:'#020818',
-      theme_color:'#020818',
-      orientation:'portrait-primary',
-      lang:'en',
-      categories:['productivity','utilities'],
-      screenshots:[],
-      icons:[
-        {src:iconUri,sizes:'192x192',type:'image/svg+xml',purpose:'any'},
-        {src:iconUri,sizes:'512x512',type:'image/svg+xml',purpose:'maskable'}
-      ]
-    };
-    const blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
-    const url=URL.createObjectURL(blob);
-    const link=document.getElementById('pwa-manifest-link');
-    if(link) link.href=url;
-    window._manifestBlobUrl=url;
-  }catch(e){}
-})();
+// PWA manifest: see manifest.json
 
 // ═══════════════════════════════════════
 //  STARFIELD
@@ -1004,7 +971,12 @@ function focusNode(id){
   if(simulation){
     simulation.nodes().forEach(n=>{
       const t=targets[n.id];
-      if(t){n.fx=t.x;n.fy=t.y;n.x=t.x;n.y=t.y;}
+      if(t){
+        // Only hard-lock the SELECTED node; others use _bx/_by for chimes
+        if(n.id===id){n.fx=t.x;n.fy=t.y;}
+        else{n.fx=null;n.fy=null;}
+        n.x=t.x;n.y=t.y;
+      }
     });
   }
   // Also update our local nodes data reference
@@ -1059,21 +1031,27 @@ function deselect(){
   if(chimesRAF){cancelAnimationFrame(chimesRAF);chimesRAF=null;}
   if(simulation){
     simulation.nodes().forEach(n=>{n.fx=null;n.fy=null;n._bx=null;n._by=null;});
-    simulation.alpha(0.3).restart();
   }
   nodeSel&&nodeSel.selectAll('circle')
     .transition().duration(350)
     .attr('stroke-opacity',null).attr('fill-opacity',null);
   nodeSel&&nodeSel.selectAll('text')
     .transition().duration(350).attr('opacity',null);
-  setTimeout(()=>{ anchorChimesBase(); scheduleChimes(500); },400);
+  setTimeout(()=>{
+    if(nodeSel) nodeSel.each(function(d){ d.fx=null; d.fy=null; d._bx=d.x; d._by=d.y; });
+    startChimesAnimation();
+  },350);
   updateFab();
 }
 
 // Chimes excluding the selected node (only moves nodes NOT locked by focusNode)
 function startChimesAnimationExcept(excludeId){
   if(chimesActive) return;
-  anchorChimesBase();
+  // Release fx/fy for all nodes except selected, then anchor base
+  if(nodeSel) nodeSel.each(function(d){
+    if(d.id!==excludeId){ d.fx=null; d.fy=null; }
+    if(d.x!=null){ d._bx=d.x; d._by=d.y; }
+  });
   chimesActive=true;
   let t=0;
   function chimesTick(){
@@ -1582,12 +1560,13 @@ function applyFractalHome(animate){
 
   // Stop physics & chimes
   stopChimesAnimation();
-  if(simulation){simulation.stop(); simulation.nodes().forEach(n=>{ const p=pos[n.id]; if(p){n.fx=p.x;n.fy=p.y;n.x=p.x;n.y=p.y;} }); }
-  graphData.nodes.forEach(n=>{ const p=pos[n.id]; if(p){n.x=p.x;n.y=p.y;n._bx=p.x;n._by=p.y;} });
+  // Set positions — use _bx/_by as anchor, NOT fx/fy (fx/fy blocks chimes)
+  if(simulation){ simulation.stop(); simulation.nodes().forEach(n=>{ const p=pos[n.id]; if(p){n.fx=null;n.fy=null;n.x=p.x;n.y=p.y;} }); }
+  graphData.nodes.forEach(n=>{ const p=pos[n.id]; if(p){n.x=p.x;n.y=p.y;n._bx=p.x;n._by=p.y; delete n.fx; delete n.fy;} });
 
   if(dur>0){
     nodeSel&&nodeSel.transition().duration(dur).ease(d3.easeCubicInOut)
-      .attr('transform',d=>{ const p=pos[d.id]; if(p){d.x=p.x;d.y=p.y;} return `translate(${d.x},${d.y})`; });
+      .attr('transform',d=>{ const p=pos[d.id]; if(p){d.x=p.x;d.y=p.y;d.fx=null;d.fy=null;d._bx=p.x;d._by=p.y;} return `translate(${d.x},${d.y})`; });
     linkSel&&linkSel.transition().duration(dur).ease(d3.easeCubicInOut)
       .attr('d',d=>{
         const sId=typeof d.source==='string'?d.source:d.source.id;
@@ -1600,10 +1579,15 @@ function applyFractalHome(animate){
         const qx=mx-(ddy/len)*curve,qy=my+(ddx/len)*curve;
         return `M${sx},${sy} Q${qx},${qy} ${tx},${ty}`;
       });
-    setTimeout(()=>{ anchorChimesBase(); scheduleChimes(400); }, dur+100);
+    // After animation: anchor and start wobble
+    setTimeout(()=>{
+      if(nodeSel) nodeSel.each(function(d){ d.fx=null; d.fy=null; d._bx=d.x; d._by=d.y; });
+      startChimesAnimation();
+    }, dur+120);
   } else {
-    nodeSel&&nodeSel.attr('transform',d=>{ const p=pos[d.id]; return `translate(${d.x},${d.y})`; });
-    anchorChimesBase(); scheduleChimes(800);
+    if(nodeSel) nodeSel.each(function(d){ d.fx=null; d.fy=null; d._bx=d.x; d._by=d.y; });
+    nodeSel&&nodeSel.attr('transform',d=>`translate(${d.x},${d.y})`);
+    setTimeout(()=>startChimesAnimation(), 200);
   }
   // Reset zoom
   svg.transition().duration(dur).call(
@@ -1616,10 +1600,10 @@ function applyFractalHome(animate){
 // Generic restore: animate to any position map
 function restorePositions(pos){
   stopChimesAnimation();
-  if(simulation){simulation.stop(); simulation.nodes().forEach(n=>{ const p=pos[n.id]; if(p){n.fx=p.x;n.fy=p.y;n.x=p.x;n.y=p.y;} }); }
+  if(simulation){simulation.stop(); simulation.nodes().forEach(n=>{ const p=pos[n.id]; if(p){n.fx=null;n.fy=null;n.x=p.x;n.y=p.y;} }); }
   graphData.nodes.forEach(n=>{ const p=pos[n.id]; if(p){n.x=p.x;n.y=p.y;n._bx=p.x;n._by=p.y;} });
   nodeSel&&nodeSel.transition().duration(420).ease(d3.easeCubicInOut)
-    .attr('transform',d=>{ const p=pos[d.id]; if(p){d.x=p.x;d.y=p.y;} return `translate(${d.x},${d.y})`; });
+    .attr('transform',d=>{ const p=pos[d.id]; if(p){d.x=p.x;d.y=p.y;d.fx=null;d.fy=null;d._bx=p.x;d._by=p.y;} return `translate(${d.x},${d.y})`; });
   linkSel&&linkSel.transition().duration(420).ease(d3.easeCubicInOut)
     .attr('d',d=>{
       const sId=typeof d.source==='string'?d.source:d.source.id;
@@ -1634,7 +1618,10 @@ function restorePositions(pos){
     });
   svg.transition().duration(420).call(d3.zoom().transform, d3.zoomIdentity);
   selectedNodeId=null;
-  setTimeout(()=>{ anchorChimesBase(); scheduleChimes(400); },440);
+  setTimeout(()=>{
+    if(nodeSel) nodeSel.each(function(d){ d.fx=null; d.fy=null; d._bx=d.x; d._by=d.y; });
+    startChimesAnimation();
+  },460);
   updateFab();
 }
 function restoreHomePositions(){
@@ -2651,63 +2638,8 @@ async function triggerInstall(){
     _deferredInstallPrompt=null;
   }
 }
-// ── Inline Service Worker (no external sw.js needed) ──
-if('serviceWorker' in navigator){
-  const swCode=`
-const CACHE='mindorbit-v1';
-const CDN=[
-  'https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js',
-  'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Inter:wght@300;400;500&display=swap',
-];
-self.addEventListener('install',e=>{
-  e.waitUntil(
-    caches.open(CACHE).then(cache=>{
-      // Cache CDN assets; ignore failures (offline install)
-      return Promise.allSettled(CDN.map(u=>cache.add(u).catch(()=>{})));
-    }).then(()=>self.skipWaiting())
-  );
-});
-self.addEventListener('activate',e=>{
-  e.waitUntil(
-    caches.keys().then(keys=>Promise.all(
-      keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))
-    )).then(()=>self.clients.claim())
-  );
-});
-self.addEventListener('fetch',e=>{
-  // Network-first for the app page, cache-first for CDN
-  const url=new URL(e.request.url);
-  const isCDN=CDN.some(u=>e.request.url.startsWith(u.split('/').slice(0,3).join('/')));
-  if(isCDN){
-    e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{
-      if(res.ok){const c=res.clone();caches.open(CACHE).then(cache=>cache.put(e.request,c));}
-      return res;
-    }).catch(()=>caches.match(e.request))));
-  } else {
-    // For the app HTML: try network, fallback to cache
-    e.respondWith(fetch(e.request).then(res=>{
-      if(res.ok){const c=res.clone();caches.open(CACHE).then(cache=>cache.put(e.request,c));}
-      return res;
-    }).catch(()=>caches.match(e.request)));
-  }
-});
-`;
-  const swBlob=new Blob([swCode],{type:'application/javascript'});
-  const swUrl=URL.createObjectURL(swBlob);
-  navigator.serviceWorker.register(swUrl,{scope:'./'}).then(reg=>{
-    // Cache this page itself for offline use
-    if('caches' in window){
-      caches.open('mindorbit-v1').then(cache=>{
-        cache.put(location.href, new Response(
-          new Blob([document.documentElement.outerHTML],{type:'text/html'}),
-          {headers:{'Content-Type':'text/html;charset=utf-8'}}
-        ));
-      });
-    }
-    // Revoke blob URL after registration (no longer needed)
-    setTimeout(()=>URL.revokeObjectURL(swUrl), 5000);
-  }).catch(()=>{});
-}
+// Service Worker: see sw.js
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 
 // ═══════════════════════════════════════
 //  NODE TOOLTIP
