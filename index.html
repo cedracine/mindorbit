@@ -353,12 +353,6 @@ textarea.f-input{min-height:72px;}
   background:linear-gradient(135deg,#FFD166,#00E5FF);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
 }
-#splash-tagline{
-  margin-top:6px;
-  font-family:'Orbitron',monospace;font-size:10px;font-weight:400;
-  letter-spacing:4px;text-transform:uppercase;
-  color:rgba(232,240,255,0.45);
-}
 /* ── Splash screen ── */
 #splash{
   position:fixed;inset:0;z-index:999;
@@ -390,6 +384,7 @@ textarea.f-input{min-height:72px;}
   letter-spacing:4px;text-transform:uppercase;
   color:rgba(232,240,255,0.45);
 }
+@keyframes splash-skip-pulse{from{opacity:0.2;}to{opacity:0.65;}}
 #install-banner{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:90;padding:10px 14px;border-radius:16px;background:rgba(4,10,36,0.97);border:1px solid rgba(0,229,255,0.35);color:var(--text);font-family:'Inter',sans-serif;font-size:12px;line-height:1.5;opacity:0;pointer-events:none;transition:opacity .3s;max-width:88vw;display:flex;align-items:flex-start;gap:10px;box-shadow:0 4px 24px rgba(0,0,0,0.5);}
 #install-banner.visible{opacity:1;pointer-events:auto;}
 #install-banner .ib-icon{font-size:20px;flex-shrink:0;margin-top:1px;}
@@ -401,16 +396,11 @@ textarea.f-input{min-height:72px;}
 </head>
 <body>
 
-<div id="splash">
-  <img id="splash-img" src="MindOrbit_Splashscreen_1.png" alt="MindOrbit"/>
+<div id="splash" style="cursor:pointer;">
+  <img id="splash-img" src="MindOrbit_Splashscreen_1.png" alt="MindOrbit" onerror="this.style.display='none'"/>
   <div id="splash-brand">MindOrbit</div>
   <div id="splash-tagline">Galaxy of Ideas</div>
-</div>
-
-<div id="splash">
-  <img id="splash-img" src="MindOrbit_Splashscreen_1.png" alt="MindOrbit"/>
-  <div id="splash-brand">MindOrbit</div>
-  <div id="splash-tagline">Galaxy of Ideas</div>
+  <div id="splash-skip" style="position:absolute;bottom:32px;left:0;right:0;text-align:center;font-family:'Orbitron',monospace;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(232,240,255,0.25);animation:splash-skip-pulse 1.2s ease-in-out 1.2s infinite alternate;">tap to continue</div>
 </div>
 
 <canvas id="starfield"></canvas>
@@ -2811,23 +2801,29 @@ initSVG();
 buildGraph();
 history.pushState({mo:true},'');
 
-// ── Splash screen sequence ──
-// Graph builds silently in background; splash shows for 2s then cross-fades
+// ── Splash screen — robust dismissal ──
 const splashEl=document.getElementById('splash');
-const SPLASH_DURATION=2200; // ms to show splash
-const SPLASH_FADE=600;      // ms fade-out duration (matches CSS transition)
+let splashDone=false;
 
-setTimeout(()=>{
-  // Start fractal layout while splash is still showing
-  applyFractalHome(false);
-  // Fade out splash
+function dismissSplash(){
+  if(splashDone) return;
+  splashDone=true;
   if(splashEl) splashEl.classList.add('hidden');
-  // After splash fades, play intro zoom on the graph
   setTimeout(()=>{
-    if(splashEl) splashEl.remove(); // clean up DOM
+    if(splashEl&&splashEl.parentNode) splashEl.remove();
     playIntroZoom();
-  }, SPLASH_FADE);
-}, SPLASH_DURATION);
+  }, 550);
+}
+
+// Tap/click anywhere on splash = skip immediately
+if(splashEl) splashEl.addEventListener('pointerdown', dismissSplash, {once:true});
+
+// Auto-dismiss after 2.5s (start fractal layout 300ms before dismiss)
+setTimeout(()=>applyFractalHome(false), 2000);
+setTimeout(dismissSplash, 2500);
+
+// Safety net: if anything goes wrong, dismiss after 5s no matter what
+setTimeout(()=>{ if(!splashDone) dismissSplash(); }, 5000);
 </script>
 </body>
 </html>
