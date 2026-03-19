@@ -402,7 +402,7 @@ textarea.f-input{min-height:72px;}
 <div id="settings-panel">
   <div class="sp-head"><h2>Settings</h2><button class="sp-close" id="sp-close-btn">✕</button></div>
   <div class="sp-list" style="overflow-y:auto;flex:1;">
-    <div class="sp-item" id="sp-install" style="display:none"><span class="sp-icon">📲</span><span class="sp-label">Install App</span><span style="margin-left:auto;font-size:10px;color:var(--text-dim);">PWA</span></div>
+    <div class="sp-item" id="sp-install" style="display:none"><span class="sp-icon">📲</span><span class="sp-label">Install App</span><span id="sp-install-note" style="margin-left:auto;font-size:10px;color:var(--text-dim);">PWA</span></div>
     <div class="sp-item" id="sp-manual"><span class="sp-icon">📖</span><span class="sp-label">User Manual</span><span style="margin-left:auto;font-size:10px;letter-spacing:1px;color:var(--text-dim);font-family:'Orbitron',monospace;">(Multilingual)</span></div>
     <div class="sp-divider"></div>
     <!-- Hierarchy — above export/import -->
@@ -641,20 +641,33 @@ textarea.f-input{min-height:72px;}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script>
 'use strict';
-// Inject PWA manifest via Blob URL (Chrome requires same-origin or blob, not data URI)
+// ── PWA Manifest via Blob URL ──
+// Blob URL is accepted by Chrome for installability (unlike data: URIs)
+// Full PWA install requires HTTPS + SW fetch handler — works on GitHub Pages
 (function(){
   try{
     const iconUri=document.querySelector('link[rel="apple-touch-icon"]').href;
-    const manifest={name:'MindOrbit',short_name:'MindOrbit',
+    const pageUrl=location.href.replace(/[#?].*$/,'');
+    const manifest={
+      id:'mindorbit-cedracine',
+      name:'MindOrbit',
+      short_name:'MindOrbit',
       description:'Galaxy of Ideas — fractal mind-map PWA',
-      start_url:'./',display:'standalone',
-      background_color:'#020818',theme_color:'#020818',
+      start_url:pageUrl,
+      scope:pageUrl.substring(0,pageUrl.lastIndexOf('/')+1),
+      display:'standalone',
+      display_override:['standalone','minimal-ui'],
+      background_color:'#020818',
+      theme_color:'#020818',
       orientation:'portrait-primary',
+      lang:'en',
+      categories:['productivity','utilities'],
+      screenshots:[],
       icons:[
-        {src:iconUri,sizes:'192x192',type:'image/svg+xml',purpose:'any maskable'},
-        {src:iconUri,sizes:'512x512',type:'image/svg+xml',purpose:'any maskable'}
-      ],
-      categories:['productivity','utilities'],lang:'en'};
+        {src:iconUri,sizes:'192x192',type:'image/svg+xml',purpose:'any'},
+        {src:iconUri,sizes:'512x512',type:'image/svg+xml',purpose:'maskable'}
+      ]
+    };
     const blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
     const url=URL.createObjectURL(blob);
     const link=document.getElementById('pwa-manifest-link');
@@ -1379,29 +1392,30 @@ function startChimesAnimation(){
       const sunN=graphData.nodes.find(n=>n.type==='sun');
       const scx=sunN?(sunN._bx||sunN.x||width/2):width/2;
       const scy=sunN?(sunN._by||sunN.y||height/2):height/2;
-      if(freezeMode){
-        // Frozen: very subtle scale-only pulse via CSS class — no position mutation
-        // (CSS @keyframes handles this, nothing to do in RAF)
-      } else {
-        nodeSel.each(function(d){
-          if(d.fx!=null) return; // locked node — skip
+      nodeSel.each(function(d){
+          // Frozen: allow a gentle micro-wobble (half amplitude)
+          const frozenFactor=freezeMode?0.38:1.0;
+          // Locked (during focusNode) — very subtle only
+          const lockedFactor=(d.fx!=null&&!freezeMode)?0:1;
+          if(d.fx!=null&&!freezeMode) return; // fully locked in focus mode
           const h=(d.id||'').split('').reduce((a,c2)=>a+c2.charCodeAt(0),0);
           const bx=d._bx!=null?d._bx:(d.x||0);
           const by=d._by!=null?d._by:(d.y||0);
-          // Drift: sinusoidal per-node offset
-          const ox=Math.sin(t*0.65+h*0.31)*2.2;
-          const oy=Math.cos(t*0.48+h*0.19)*1.8;
-          // Radial ripple from sun center
+          // ── Primary wobble: figure-8 Lissajous per node, 8-12px amplitude ──
+          const amp = d.type==='sun' ? 4 : d.type==='idea' ? 10 : d.type==='step' ? 8 : 6;
+          const speed = d.type==='sun' ? 0.55 : 0.72;
+          const ox = Math.sin(t*speed      + h*0.37) * amp;
+          const oy = Math.cos(t*speed*0.61 + h*0.23) * amp * 0.75;
+          // ── Radial ripple from sun center — wave propagates outward ──
           const distX=bx-scx, distY=by-scy;
           const dist=Math.sqrt(distX*distX+distY*distY)||1;
-          const ripple=Math.sin(t*1.05-dist*0.013+h*0.07)*0.7;
+          const ripple=Math.sin(t*0.95 - dist*0.015 + h*0.09) * 3.5;
           const rx=(distX/dist)*ripple, ry=(distY/dist)*ripple;
-          d.x=bx+ox*0.045+rx;
-          d.y=by+oy*0.045+ry;
+          d.x = bx + (ox + rx) * frozenFactor;
+          d.y = by + (oy + ry) * frozenFactor;
         });
         nodeSel.attr('transform',d=>`translate(${d.x},${d.y})`);
         linkSel.attr('d',(d=>{ const sx=d.source.x||0,sy=d.source.y||0,tx=d.target.x||0,ty=d.target.y||0; const mx=(sx+tx)/2,my=(sy+ty)/2; const dx=tx-sx,dy=ty-sy; const len=Math.sqrt(dx*dx+dy*dy)||1; const curve=Math.min(len*0.18,38); const cx=mx-(dy/len)*curve,cy=my+(dx/len)*curve; return `M${sx},${sy} Q${cx},${cy} ${tx},${ty}`; }));
-      }
     }
     chimesRAF=requestAnimationFrame(chimesTick);
   }
@@ -2317,7 +2331,25 @@ function openSettings(){
   const isStandalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
   const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
   const installItem=document.getElementById('sp-install');
-  if(installItem) installItem.style.display=(!isStandalone&&(_deferredInstallPrompt||isIOS))?'flex':'none';
+  const installNote=document.getElementById('sp-install-note');
+  const isHttps=location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1';
+  if(installItem){
+    // Show if: not standalone AND (prompt ready OR iOS OR https capable)
+    const shouldShow=!isStandalone&&(_deferredInstallPrompt||isIOS||isHttps);
+    installItem.style.display=shouldShow?'flex':'none';
+    if(installNote){
+      if(!isHttps&&!_deferredInstallPrompt&&!isIOS){
+        installNote.textContent='needs HTTPS';
+        installNote.style.color='rgba(239,71,111,0.7)';
+      } else if(isStandalone){
+        installNote.textContent='installed ✓';
+        installNote.style.color='#06D6A0';
+      } else {
+        installNote.textContent='PWA';
+        installNote.style.color='';
+      }
+    }
+  }
   // Populate hierarchy name inputs
   const tn=getTypeNames();
   ['sun','idea','step','module'].forEach(t=>{
