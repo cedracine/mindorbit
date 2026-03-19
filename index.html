@@ -6,7 +6,29 @@
 <meta name="theme-color" content="#020818"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<title>MindOrbit</title>
+<title>MindOrbit — Galaxy of Ideas</title>
+<meta name="description" content="MindOrbit is a free offline-first fractal mind-map PWA. Your ideas as a living solar system. No account, no ads, works offline."/>
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://cedracine.github.io/mindorbit/"/>
+<meta property="og:title" content="MindOrbit — Galaxy of Ideas"/>
+<meta property="og:description" content="A free offline-first fractal mind-map PWA. Your ideas as a living solar system. No account, no ads, works offline."/>
+<meta property="og:image" content="https://cedracine.github.io/mindorbit/og-banner.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:image:alt" content="MindOrbit — Galaxy of Ideas · 3D Offline Mind Mapping"/>
+<meta property="og:site_name" content="MindOrbit"/>
+<meta property="og:locale" content="en_US"/>
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:url" content="https://cedracine.github.io/mindorbit/"/>
+<meta name="twitter:title" content="MindOrbit — Galaxy of Ideas"/>
+<meta name="twitter:description" content="A free offline-first fractal mind-map PWA. Your ideas as a living solar system."/>
+<meta name="twitter:image" content="https://cedracine.github.io/mindorbit/og-banner.png"/>
+<meta name="twitter:image:alt" content="MindOrbit — Galaxy of Ideas"/>
+<meta name="twitter:creator" content="@cedracine"/>
 <link rel="manifest" href="manifest.json"/>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20192%20192%22%3E%0A%20%20%3Crect%20width%3D%22192%22%20height%3D%22192%22%20rx%3D%2238%22%20fill%3D%22%23020818%22/%3E%0A%20%20%3Ccircle%20cx%3D%2296%22%20cy%3D%2296%22%20r%3D%2258%22%20fill%3D%22none%22%20stroke%3D%22%2300E5FF%22%20stroke-width%3D%225%22%20opacity%3D%220.35%22/%3E%0A%20%20%3Ccircle%20cx%3D%2296%22%20cy%3D%2296%22%20r%3D%2228%22%20fill%3D%22%23FFD16622%22%20stroke%3D%22%23FFD166%22%20stroke-width%3D%223%22/%3E%0A%20%20%3Ctext%20x%3D%2296%22%20y%3D%22107%22%20text-anchor%3D%22middle%22%20font-size%3D%2230%22%20font-family%3D%22serif%22%3E%E2%98%80%EF%B8%8F%3C/text%3E%0A%20%20%3Ccircle%20cx%3D%22152%22%20cy%3D%2268%22%20r%3D%2210%22%20fill%3D%22%2306D6A088%22%20stroke%3D%22%2306D6A0%22%20stroke-width%3D%222%22/%3E%0A%20%20%3Ccircle%20cx%3D%2256%22%20cy%3D%22148%22%20r%3D%227%22%20fill%3D%22%23AEFEFFaa%22%20stroke%3D%22%23AEFEFF%22%20stroke-width%3D%221.5%22/%3E%0A%3C/svg%3E"/>
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20192%20192%22%3E%0A%20%20%3Crect%20width%3D%22192%22%20height%3D%22192%22%20rx%3D%2238%22%20fill%3D%22%23020818%22/%3E%0A%20%20%3Ccircle%20cx%3D%2296%22%20cy%3D%2296%22%20r%3D%2258%22%20fill%3D%22none%22%20stroke%3D%22%2300E5FF%22%20stroke-width%3D%225%22%20opacity%3D%220.35%22/%3E%0A%20%20%3Ccircle%20cx%3D%2296%22%20cy%3D%2296%22%20r%3D%2228%22%20fill%3D%22%23FFD16622%22%20stroke%3D%22%23FFD166%22%20stroke-width%3D%223%22/%3E%0A%20%20%3Ctext%20x%3D%2296%22%20y%3D%22107%22%20text-anchor%3D%22middle%22%20font-size%3D%2230%22%20font-family%3D%22serif%22%3E%E2%98%80%EF%B8%8F%3C/text%3E%0A%20%20%3Ccircle%20cx%3D%22152%22%20cy%3D%2268%22%20r%3D%2210%22%20fill%3D%22%2306D6A088%22%20stroke%3D%22%2306D6A0%22%20stroke-width%3D%222%22/%3E%0A%20%20%3Ccircle%20cx%3D%2256%22%20cy%3D%22148%22%20r%3D%227%22%20fill%3D%22%23AEFEFFaa%22%20stroke%3D%22%23AEFEFF%22%20stroke-width%3D%221.5%22/%3E%0A%3C/svg%3E"/>
@@ -311,6 +333,63 @@ textarea.f-input{min-height:72px;}
 .glow-swatch-btn input[type=color]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;border:none;padding:0;}
 
 /* PWA A2HS banner */
+/* ── Splash screen ── */
+#splash{
+  position:fixed;inset:0;z-index:999;
+  background:#020818;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity .6s ease, visibility .6s ease;
+}
+#splash.hidden{opacity:0;visibility:hidden;pointer-events:none;}
+#splash-img{
+  width:min(380px,88vw);height:min(380px,88vw);
+  object-fit:cover;border-radius:24px;
+  box-shadow:0 0 60px rgba(0,229,255,0.18),0 0 120px rgba(255,209,102,0.12);
+}
+#splash-brand{
+  margin-top:24px;
+  font-family:'Orbitron',monospace;font-size:28px;font-weight:800;
+  letter-spacing:4px;
+  background:linear-gradient(135deg,#FFD166,#00E5FF);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+#splash-tagline{
+  margin-top:6px;
+  font-family:'Orbitron',monospace;font-size:10px;font-weight:400;
+  letter-spacing:4px;text-transform:uppercase;
+  color:rgba(232,240,255,0.45);
+}
+/* ── Splash screen ── */
+#splash{
+  position:fixed;inset:0;z-index:999;
+  background:#020818;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity .6s ease,visibility .6s ease;
+}
+#splash.hidden{opacity:0;visibility:hidden;pointer-events:none;}
+#splash-img{
+  width:min(380px,88vw);height:min(380px,88vw);
+  object-fit:cover;border-radius:24px;
+  box-shadow:0 0 60px rgba(0,229,255,0.18),0 0 120px rgba(255,209,102,0.12);
+  animation:splash-glow 2s ease-in-out infinite alternate;
+}
+@keyframes splash-glow{
+  from{box-shadow:0 0 40px rgba(0,229,255,0.15),0 0 80px rgba(255,209,102,0.10);}
+  to{box-shadow:0 0 80px rgba(0,229,255,0.30),0 0 160px rgba(255,209,102,0.20);}
+}
+#splash-brand{
+  margin-top:24px;
+  font-family:'Orbitron',monospace;font-size:28px;font-weight:800;
+  letter-spacing:4px;
+  background:linear-gradient(135deg,#FFD166,#00E5FF);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+#splash-tagline{
+  margin-top:6px;
+  font-family:'Orbitron',monospace;font-size:10px;font-weight:400;
+  letter-spacing:4px;text-transform:uppercase;
+  color:rgba(232,240,255,0.45);
+}
 #install-banner{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:90;padding:10px 14px;border-radius:16px;background:rgba(4,10,36,0.97);border:1px solid rgba(0,229,255,0.35);color:var(--text);font-family:'Inter',sans-serif;font-size:12px;line-height:1.5;opacity:0;pointer-events:none;transition:opacity .3s;max-width:88vw;display:flex;align-items:flex-start;gap:10px;box-shadow:0 4px 24px rgba(0,0,0,0.5);}
 #install-banner.visible{opacity:1;pointer-events:auto;}
 #install-banner .ib-icon{font-size:20px;flex-shrink:0;margin-top:1px;}
@@ -321,6 +400,18 @@ textarea.f-input{min-height:72px;}
 </style>
 </head>
 <body>
+
+<div id="splash">
+  <img id="splash-img" src="MindOrbit_Splashscreen_1.png" alt="MindOrbit"/>
+  <div id="splash-brand">MindOrbit</div>
+  <div id="splash-tagline">Galaxy of Ideas</div>
+</div>
+
+<div id="splash">
+  <img id="splash-img" src="MindOrbit_Splashscreen_1.png" alt="MindOrbit"/>
+  <div id="splash-brand">MindOrbit</div>
+  <div id="splash-tagline">Galaxy of Ideas</div>
+</div>
 
 <canvas id="starfield"></canvas>
 <svg id="scene"></svg>
@@ -2718,10 +2809,25 @@ function hideTooltip(){document.getElementById('node-tooltip').classList.remove(
 applyTypeColors();
 initSVG();
 buildGraph();
-// Apply fractal home layout after graph is built
-setTimeout(()=>applyFractalHome(false),100);
 history.pushState({mo:true},'');
-playIntroZoom();
+
+// ── Splash screen sequence ──
+// Graph builds silently in background; splash shows for 2s then cross-fades
+const splashEl=document.getElementById('splash');
+const SPLASH_DURATION=2200; // ms to show splash
+const SPLASH_FADE=600;      // ms fade-out duration (matches CSS transition)
+
+setTimeout(()=>{
+  // Start fractal layout while splash is still showing
+  applyFractalHome(false);
+  // Fade out splash
+  if(splashEl) splashEl.classList.add('hidden');
+  // After splash fades, play intro zoom on the graph
+  setTimeout(()=>{
+    if(splashEl) splashEl.remove(); // clean up DOM
+    playIntroZoom();
+  }, SPLASH_FADE);
+}, SPLASH_DURATION);
 </script>
 </body>
 </html>
