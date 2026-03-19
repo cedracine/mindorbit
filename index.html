@@ -915,7 +915,11 @@ function playIntroZoom(){
         .duration(900)
         .ease(d3.easeCubicOut)
         .attr('transform','translate(0,0) scale(1)')
-        .on('end',()=>setTimeout(()=>startChimesAnimation(),300));
+        .on('end',()=>{
+          // Anchor current positions THEN schedule chimes after 3s idle
+          anchorChimesBase();
+          scheduleChimes(3000);
+        });
     });
 }
 
@@ -1438,11 +1442,20 @@ let chimesRAF=null;
 let _idleTimer=null;
 
 // Anchor all nodes at their current positions for chimes baseline
+// Syncs BOTH the D3 selection data objects AND graphData nodes
 function anchorChimesBase(){
+  // Step 1: sync D3 selection (source of truth for rendering)
   if(nodeSel) nodeSel.each(function(d){
-    if(d.x!=null){ d._bx=d.x; d._by=d.y; }
+    if(d.x!=null&&d.x!==0){ d._bx=d.x; d._by=d.y; }
   });
-  graphData.nodes.forEach(n=>{ if(n.x!=null){n._bx=n.x;n._by=n.y;} });
+  // Step 2: copy back to graphData so future buildGraph() inherits correct bases
+  graphData.nodes.forEach(n=>{
+    if(n.x!=null&&n.x!==0){ n._bx=n.x; n._by=n.y; }
+    else if(nodeSel){
+      // fallback: find the D3 datum and grab its position
+      nodeSel.each(function(d){ if(d.id===n.id&&d.x!=null&&d.x!==0){n._bx=d.x;n._by=d.y;} });
+    }
+  });
 }
 
 // Schedule chimes start after idle ms (default 3000)
@@ -1450,9 +1463,20 @@ function scheduleChimes(ms){
   clearTimeout(_idleTimer);
   if(chimesActive) return;
   _idleTimer=setTimeout(()=>{
-    if(!chimesActive) startChimesAnimation();
+    if(!chimesActive){
+      anchorChimesBase();
+      startChimesAnimation();
+    }
   }, ms||3000);
 }
+
+// Reset idle timer on any user touch/interaction
+function resetIdleTimer(){
+  if(chimesActive){ stopChimesAnimation(); anchorChimesBase(); }
+  scheduleChimes(3000);
+}
+// Wire global idle reset — touch/pointer on canvas
+document.getElementById('scene').addEventListener('pointerdown', resetIdleTimer, {passive:true});
 
 function startChimesAnimation(){
   if(chimesActive) return;
@@ -1460,6 +1484,14 @@ function startChimesAnimation(){
   if(simulation) simulation.stop();
   // Ensure all nodes have a proper base anchor
   anchorChimesBase();
+  // Safety: if all _bx are 0 or undefined (positions not settled yet), delay
+  let hasPositions=false;
+  if(nodeSel) nodeSel.each(function(d){ if(d._bx&&Math.abs(d._bx)>5) hasPositions=true; });
+  if(!hasPositions){
+    chimesActive=false;
+    scheduleChimes(1500);
+    return;
+  }
   let t=0;
   function chimesTick(){
     t+=0.008;
@@ -1682,9 +1714,12 @@ function applyFractalHome(animate){
       startChimesAnimation();
     }, dur+120);
   } else {
-    if(nodeSel) nodeSel.each(function(d){ d.fx=null; d.fy=null; d._bx=d.x; d._by=d.y; });
+    if(nodeSel) nodeSel.each(function(d){
+      const p=pos[d.id]; if(p){d.x=p.x;d.y=p.y;}
+      d.fx=null; d.fy=null; d._bx=d.x||0; d._by=d.y||0;
+    });
     nodeSel&&nodeSel.attr('transform',d=>`translate(${d.x},${d.y})`);
-    setTimeout(()=>startChimesAnimation(), 200);
+    scheduleChimes(3000);
   }
   // Reset zoom
   svg.transition().duration(dur).call(
