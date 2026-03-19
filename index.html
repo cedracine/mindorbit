@@ -746,6 +746,36 @@ function migrateV1(state){
   return {nodes,links};
 }
 
+// ── Virgin state helpers ──
+function isVirgin(){ return !!(graphData&&graphData._resetEmpty); }
+function loadDemoData(){
+  // Replace current graph with demo, clear virgin flag, save
+  const demo=defaultGraphData();
+  graphData=demo;
+  delete graphData._resetEmpty;
+  applyTypeColors();
+  saveGraphData();
+  buildGraph();
+  homePositions={};homeShuffleCount=0;
+  setTimeout(()=>applyFractalHome(true),180);
+  showToast('✨ Demo data loaded');
+}
+
+// ── Virgin state helpers ──
+function isVirgin(){ return !!(graphData&&graphData._resetEmpty); }
+function loadDemoData(){
+  const demo=defaultGraphData();
+  graphData=demo;
+  delete graphData._resetEmpty;
+  applyTypeColors();
+  saveGraphData();
+  buildGraph();
+  homePositions={};homeShuffleCount=0;
+  setTimeout(()=>{ playIntroZoom(); setTimeout(()=>applyFractalHome(true),600); },100);
+  updateMeIconTooltip();
+  showToast('✨ Demo data loaded');
+}
+
 function saveGraphData(){
   // Persist current visual positions into each node before saving
   if(nodeSel) nodeSel.each(function(d){
@@ -1634,21 +1664,42 @@ function restoreHomePositions(){
 // ═══════════════════════════════════════
 //  TOPBAR ICON — Home (shuffle or restore)
 // ═══════════════════════════════════════
-// Set initial tooltip
-document.getElementById('topbar-icon').title='Shuffle Home';
+// Topbar Me icon — behaviour depends on state
+function updateMeIconTooltip(){
+  const el=document.getElementById('topbar-icon');
+  if(!el) return;
+  if(freezeMode) el.title='Restore Home';
+  else if(isVirgin()) el.title='Load Demo';
+  else el.title='Refresh Home';
+}
+updateMeIconTooltip();
+
 document.getElementById('topbar-icon').addEventListener('click',()=>{
   if(freezeMode){
-    // Prefer explicitly saved positions; fall back to last shuffle
+    // Frozen → restore explicitly saved positions (or last shuffle)
     const pos=Object.keys(savedHomePositions).length?savedHomePositions:homePositions;
     if(Object.keys(pos).length){
       restorePositions(pos);
-      showToast(Object.keys(savedHomePositions).length?'🏠 Saved positions restored':'🏠 Home restored');
+      showToast('🏠 Home restored');
     } else {
       applyFractalHome(true);
     }
-  } else {
-    applyFractalHome(true);
+    return;
   }
+  if(isVirgin()){
+    // Virgin (after reset, no user data) → restore demo
+    loadDemoData();
+    return;
+  }
+  // Normal → refresh: intro zoom + fractal layout reset
+  stopChimesAnimation();
+  selectedNodeId=null;
+  deselect();
+  svg.transition().duration(300).call(d3.zoom().transform, d3.zoomIdentity);
+  setTimeout(()=>{
+    playIntroZoom();
+    setTimeout(()=>applyFractalHome(true), 600);
+  }, 100);
 });
 
 // ═══════════════════════════════════════
@@ -1979,6 +2030,7 @@ document.getElementById('ns-save').onclick=()=>{
     graphData.links.push({source:parentId,target:id});
     // User has added real data — clear the reset-empty flag
     delete graphData._resetEmpty;
+    updateMeIconTooltip();
   } else {
     const node=nsCtx.node;
     const income=parseFloat(document.getElementById('ns-income').value)||0;const expected=parseFloat(document.getElementById('ns-expected').value)||0;
@@ -2532,7 +2584,8 @@ document.getElementById('sp-reset').addEventListener('click',()=>{
       buildGraph();
       setTimeout(()=>applyFractalHome(true),180);
       document.getElementById('confirm-overlay').classList.remove('open');
-      showToast('Reset — only Me remains');
+      updateMeIconTooltip();
+      showToast('Reset ✓ — tap ☀️ to load demo');
     };
     document.getElementById('confirm-overlay').classList.add('open');
   },200);
